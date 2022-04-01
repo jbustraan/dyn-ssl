@@ -14,6 +14,9 @@
 * Added BASH script to Zabbix to check for days remaining.  It runs once daily and will alert when there are only 10 days remaining on the certificate (certificate life is 90 days)
 ---
 ### Sample Zabbix Screens
-[Problem Detected](https://example.com)
-[Technology name](https://example.com)
+![Problem Detected](images/ssl_problem.jpeg)
+![Latest Data](images/ssl_items.jpeg)
+![Setup Item](images/ssl_single_item_setup.jpeg)
+![Setup Trigger](images/ssl_single_trigger_setup.jpeg)
+
 
