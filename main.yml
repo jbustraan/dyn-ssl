@@ -38,7 +38,7 @@
       when: ('nginx' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
     - block:
-        - name: Copy httpd certs was found
+        - name: Host has Apache installed
           debug:
             msg: "Apache found on {{ ansible_hostname }}"
 
@@ -58,7 +58,7 @@
       when: ('httpd' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
     - block:
-        - name: Copy certificate files to cockpit.socket host
+        - name: RHEL Cockpit host is found 
           debug:
             msg: "Cockpit found on {{ ansible_hostname }}"
 
@@ -88,7 +88,6 @@
           notify: restart cockpit.socket
       when: ('cockpit' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
-      # Proxmox goes here
     - block:
         - name: Copy certificate files to Proxmox host
           debug:

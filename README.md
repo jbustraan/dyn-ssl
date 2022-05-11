@@ -1,17 +1,15 @@
 ## Dynamic SSL Updater
 
 ### Operational Overview
-1. ACME cronjob is working on raptor.bustraan.net and it can renew free wildcard SSL certificate ever 90 day from zerossl.com or letsencrypt.com
-  status: DONE
+1. ACME cronjob is executed every 90 days on on raptor.bustraan.net (KVM host) and it can renew free wildcard SSL certificate ever 90 day from zerossl.com or letsencrypt.com. Note: you need an account with API keys with your domain provided for this integration to succeed.
 
-2. Create and Ansible playbook to:
-  - Download latest SSL certificates from Raptor host as cronjob - DONE
-  - Copy certs by OS-type and installed package type (nginx, httpd, pveproxy, cockpit) to correct directory and filename formats. DONE
-  - Restart appropriate processes
-  status: DONE
+2. Ansible playbook 
+  - Downloads latest certificates from Raptor.
+  - Copies certs by OS-type and installed package type (nginx, httpd, pveproxy, cockpit) to correct directory and filename formats. 
+  - Restart appropriate server processes
 
 ### Monitoring
-* Added BASH script to Zabbix to check for days remaining.  It runs once daily and will alert when there are only 10 days remaining on the certificate (certificate life is 90 days)
+* A Bash script, checkssl.sh runs on the Zabbix server daily to check for days remaining. Trigger will alert when there are only 3 days remaining on the certificate (certificate life is 90 days)
 ---
 ### Sample Zabbix Screens
 #### Problem Detected in Zabbix:
@@ -24,5 +22,5 @@
 ![Setup Trigger](images/ssl_single_trigger_setup.jpeg)
 
 ### Additional ToDo:
-* Prometheus and Grafana hosts should be added to "sslcerts" group - add nginx reverse proxy in front of service port - DONE
-* Add Proxmox cluster UI and API certificates to scripts - workflow is documented.
+* Prometheus and Grafana hosts should be added to "sslcerts" group - added nginx reverse proxy in front of service port - DONE
+* Add Proxmox cluster UI and API certificates to scripts - workflow is documented - DONE
