@@ -111,6 +111,7 @@
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/pve/local/pveproxy-ssl.key
           notify: restart pveproxy
+          notify: restart pvedaemon
       when: ('pve-qemu-kvm' in ansible_facts.packages) and (ansible_os_family == 'Debian')
 
   handlers:
@@ -125,3 +126,6 @@
 
     - name: restart pveproxy
       service: name=pveproxy state=restarted
+
+    - name: restart pvedaemon
+      service: name=pvedeamon state=restarted

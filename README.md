@@ -4,9 +4,9 @@
 1. ACME cronjob is working on raptor.bustraan.net and it can renew free wildcard SSL certificate ever 90 day from zerossl.com or letsencrypt.com
   status: DONE
 
-2. Create and Ansible script to:
-  - Download latest SSL certificates from Raptor host
-  - Copy certs by OS-type and installed package type (nginx, httpd, pveproxy, cockpit) to correct directory and filename formats.
+2. Create and Ansible playbook to:
+  - Download latest SSL certificates from Raptor host as cronjob - DONE
+  - Copy certs by OS-type and installed package type (nginx, httpd, pveproxy, cockpit) to correct directory and filename formats. DONE
   - Restart appropriate processes
   status: DONE
 
@@ -23,4 +23,6 @@
 #### Setup a new Trigger
 ![Setup Trigger](images/ssl_single_trigger_setup.jpeg)
 
-
+### Additional ToDo:
+* Prometheus and Grafana hosts should be added to "sslcerts" group - add nginx reverse proxy in front of service port - DONE
+* Add Proxmox cluster UI and API certificates to scripts - workflow is documented.
