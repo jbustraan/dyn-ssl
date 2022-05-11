@@ -11,8 +11,10 @@
 ### Monitoring
 * A Bash script, checkssl.sh runs on the Zabbix server daily to check for days remaining. Trigger will alert when there are only 3 days remaining on the certificate (certificate life is 90 days)
 ---
+### Solution Overview Diagram
+![Overview](images/Dyn-SSL-Overview.png)
 ### Sample Zabbix Screens
-#### Problem Detected in Zabbix:
+#### Problem Detected in Zabbix
 ![Problem Detected](images/ssl_problem.jpeg)
 #### Latest Data
 ![Latest Data](images/ssl_items.jpeg)

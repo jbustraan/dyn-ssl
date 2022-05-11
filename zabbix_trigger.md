@@ -5,3 +5,5 @@
 
 - Severity Level: Whatever you deem appropriate - pick from available Zabbix types
 
+- Expression: 
+  ```{Zabbix server:system.run[/usr/local/bin/checkssl.sh dns.bustraan.net].last()}<10```
