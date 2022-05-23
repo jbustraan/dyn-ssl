@@ -1,5 +1,6 @@
 ---
-- hosts: sslcerts
+###- hosts: sslcerts
+- hosts: foreman.bustraan.lab
   gather_facts: true
   become: true
 
@@ -38,7 +39,7 @@
       when: ('nginx' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
     - block:
-        - name: Host has Apache installed
+        - name: Host has Apache and not Foreman installed
           debug:
             msg: "Apache found on {{ ansible_hostname }}"
 
@@ -55,7 +56,29 @@
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/httpd/bustraan.net.key
           notify: restart apache
-      when: ('httpd' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
+      when: ('httpd' in ansible_facts.packages) and ('foreman' not in ansible_facts.packages) and (ansible_os_family == 'RedHat')
+
+    - block:
+        - name: Host has Apache and Foreman installed
+          debug:
+            msg: "Apache found on {{ ansible_hostname }}"
+
+        - name: Copy certificate files to apache foreman host in proper location and naming convention
+          copy:
+            src: "{{ item.src_file }}"
+            dest: "{{ item.dst_file }}"
+            owner: root
+            group: root
+            mode: '0644'
+          with_items:
+            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+              dst_file: /etc/puppetlabs/puppet/ssl/certs/ca.pem
+            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+              dst_file: /etc/puppetlabs/puppet/ssl/private_keys/foreman.bustraan.net.pem
+            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.cer
+              dst_file: /etc/puppetlabs/puppet/ssl/certs/foreman.bustraan.net.pem
+          notify: restart apache
+      when: ('httpd' in ansible_facts.packages) and ('foreman' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
     - block:
         - name: RHEL Cockpit host is found 
@@ -93,7 +116,7 @@
           debug:
             msg: "Proxmox found on {{ ansible_hostname }}"
 
-        - name: Copy certificate files to apache host in proper location and naming convention
+        - name: Copy certificate files to proxmox ve hosts in proper location and naming convention
           copy:
             src: "{{ item.src_file }}"
             dest: "{{ item.dst_file }}"
@@ -109,9 +132,31 @@
               dst_file: /etc/pve/local/pveproxy-ssl.pem
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/pve/local/pveproxy-ssl.key
-          notify: restart pveproxy
-          notify: restart pvedaemon
+          notify: restart pveproxy, restart pvedaemon
       when: ('pve-qemu-kvm' in ansible_facts.packages) and (ansible_os_family == 'Debian')
+
+    - block:
+        - name: Copy certificate files to GitLab host
+          debug:
+            msg: "Gitlab found on {{ ansible_hostname }}"
+
+        - name: Copy certificate files to gitlab host in proper location and naming convention
+          copy:
+            src: "{{ item.src_file }}"
+            dest: "{{ item.dst_file }}"
+            owner: root
+            group: root
+            mode: '0640'
+          with_items:
+            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+              dst_file: "/etc/gitlab/ssl/gitlab.bustraan.net.crt"
+            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+              dst_file: "/etc/gitlab/ssl/gitlab.bustraan.net.key"
+          notify: restart gitlab-runsvdir
+      when: inventory_hostname == 'git.bustraan.lab'
+
+      #/etc/gitlab/ssl/gitlab.bustraan.net.crt;
+      #/etc/gitlab/ssl/gitlab.bustraan.net.key;
 
   handlers:
     - name: restart nginx
@@ -128,3 +173,6 @@
 
     - name: restart pvedaemon
       service: name=pvedeamon state=restarted
+
+    - name: restart gitlab-runsvdir
+      service: name=gitlab-runsvdir state=restarted
