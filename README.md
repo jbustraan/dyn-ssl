@@ -24,5 +24,6 @@
 ![Setup Trigger](images/ssl_single_trigger_setup.jpeg)
 
 ### Additional ToDo:
+* Add foreman certificates suppport - checks for Apache and foreman installed on host - DONE
 * Prometheus and Grafana hosts should be added to "sslcerts" group - added nginx reverse proxy in front of service port - DONE
 * Add Proxmox cluster UI and API certificates to scripts - workflow is documented - DONE
