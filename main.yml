@@ -72,11 +72,11 @@
             mode: '0644'
           with_items:
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
-              dst_file: /etc/puppetlabs/puppet/ssl/certs/ca.pem
+              dst_file: /etc/pki/tls/certs/fullchain.cer
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
-              dst_file: /etc/puppetlabs/puppet/ssl/private_keys/foreman.bustraan.net.pem
+              dst_file: /etc/pki/tls/private/bustraan.net.key
             - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.cer
-              dst_file: /etc/puppetlabs/puppet/ssl/certs/foreman.bustraan.net.pem
+              dst_file: /etc/pki/tls/certs/bustraan.net.cer
           notify: restart apache
       when: ('httpd' in ansible_facts.packages) and ('foreman' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
 
@@ -135,25 +135,9 @@
           notify: restart pveproxy, restart pvedaemon
       when: ('pve-qemu-kvm' in ansible_facts.packages) and (ansible_os_family == 'Debian')
 
-    - block:
-        - name: Copy certificate files to GitLab host
-          debug:
-            msg: "Gitlab found on {{ ansible_hostname }}"
-
-        - name: Copy certificate files to gitlab host in proper location and naming convention
-          copy:
-            src: "{{ item.src_file }}"
-            dest: "{{ item.dst_file }}"
-            owner: root
-            group: root
-            mode: '0640'
-          with_items:
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
-              dst_file: "/etc/gitlab/ssl/gitlab.bustraan.net.crt"
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
-              dst_file: "/etc/gitlab/ssl/gitlab.bustraan.net.key"
-          notify: restart gitlab-runsvdir
-      when: inventory_hostname == 'git.bustraan.lab'
+      #    - block:
+      #        - name: Copy certificate files to GitLab host
+      #      when: inventory_hostname == 'git.bustraan.lab'
 
       #/etc/gitlab/ssl/gitlab.bustraan.net.crt;
       #/etc/gitlab/ssl/gitlab.bustraan.net.key;
@@ -174,5 +158,3 @@
     - name: restart pvedaemon
       service: name=pvedeamon state=restarted
 
-    - name: restart gitlab-runsvdir
-      service: name=gitlab-runsvdir state=restarted
