@@ -1,13 +1,13 @@
 ---
 ###- hosts: sslcerts
-- hosts: foreman.bustraan.lab
+- hosts: sslcerts
   gather_facts: true
   become: true
 
   tasks:
     - name: Getting latest Zero-SSL certs from raptor
       shell: |
-         cd /home/ansible/playbooks/dyn-ssl/certs
+         cd /home/ansible/ansible-playbooks/dyn-ssl/certs
          curl -s https://raptor.bustraan.net/certs/fullchain.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.key -O
@@ -31,9 +31,9 @@
             group: root
             mode: '0644'
           with_items:
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: /etc/nginx/bustraan.net.crt
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/nginx/bustraan.net.key
           notify: restart nginx
       when: ('nginx' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
@@ -51,9 +51,9 @@
             group: root
             mode: '0644'
           with_items:
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: /etc/httpd/bustraan.net.crt
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/httpd/bustraan.net.key
           notify: restart apache
       when: ('httpd' in ansible_facts.packages) and ('foreman' not in ansible_facts.packages) and (ansible_os_family == 'RedHat')
@@ -71,11 +71,11 @@
             group: root
             mode: '0644'
           with_items:
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: /etc/pki/tls/certs/fullchain.cer
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/pki/tls/private/bustraan.net.key
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.cer
               dst_file: /etc/pki/tls/certs/bustraan.net.cer
           notify: restart apache
       when: ('httpd' in ansible_facts.packages) and ('foreman' in ansible_facts.packages) and (ansible_os_family == 'RedHat')
@@ -93,10 +93,10 @@
             group: root
             mode: "{{ item.mode }}"
           with_items:
-            - file1: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.cer
+            - file1: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.cer
               file2: /etc/cockpit/ws-certs.d/bustraan.crt
               mode: '0644'
-            - file1: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - file1: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               file2: /etc/cockpit/ws-certs.d/bustraan.key
               mode: '0644'
 
@@ -124,23 +124,35 @@
             group: www-data
             mode: '0640'
           with_items:
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: "/etc/pve/nodes/{{ ansible_nodename }}/pveproxy-ssl.pem"
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: "/etc/pve/nodes/{{ ansible_nodename }}/pveproxy-ssl.key"
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/fullchain.cer
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: /etc/pve/local/pveproxy-ssl.pem
-            - src_file: /home/ansible/playbooks/dyn-ssl/certs/bustraan.net.key
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: /etc/pve/local/pveproxy-ssl.key
           notify: restart pveproxy, restart pvedaemon
       when: ('pve-qemu-kvm' in ansible_facts.packages) and (ansible_os_family == 'Debian')
 
-      #    - block:
-      #        - name: Copy certificate files to GitLab host
-      #      when: inventory_hostname == 'git.bustraan.lab'
+    - block:
+        - name: Copy certificate files to AWX host
+          debug:
+            msg: "Proxmox found on {{ ansible_hostname }}"
 
-      #/etc/gitlab/ssl/gitlab.bustraan.net.crt;
-      #/etc/gitlab/ssl/gitlab.bustraan.net.key;
+        - name: Copy certificate files to proxmox ve hosts in proper location and naming convention
+          copy:
+            src: "{{ item.src_file }}"
+            dest: "{{ item.dst_file }}"
+            owner: root
+            group: www-data
+            mode: '0640'
+          with_items:
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/fullchain.cer
+              dst_file: "/root/awx-on-k3s/base/tls.crt"
+            - src_file: /home/ansible/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
+              dst_file: "/root/awx-on-k3s/base/tls.key"
+      when: (ansible_hostname == 'awx') 
 
   handlers:
     - name: restart nginx
