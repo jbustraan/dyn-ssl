@@ -7,7 +7,7 @@
   tasks:
     - name: Getting latest Zero-SSL certs from raptor
       shell: |
-         cd /home/ansible/ansible-playbooks/dyn-ssl/certs
+         cd ~/ansible-playbooks/dyn-ssl/certs
          curl -s https://raptor.bustraan.net/certs/fullchain.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.key -O
