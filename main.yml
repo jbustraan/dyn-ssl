@@ -5,13 +5,24 @@
   become: true
 
   tasks:
-    - name: Getting latest Zero-SSL certs from raptor
+    - name: Get home directory base path
+      shell: echo $HOME
+      become: false
+      run_once: true
+      register: home_dir
+ 
+    - debug:
+        var: home_dir.stdout
+      connection: local
+      run_once: true
+
+    - name: Getting latest Zero-SSL certs from raptor to {{ home_dir.stdout }}
       shell: |
-         cd ~/ansible-playbooks/dyn-ssl/certs
+         cd {{ home_dir.stdout }}/ansible-playbooks/dyn-ssl/certs
          curl -s https://raptor.bustraan.net/certs/fullchain.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.cer -O
          curl -s https://raptor.bustraan.net/certs/bustraan.net.key -O
-      delegate_to: localhost
+      connection: local
       run_once: true
 
     - name: get the rpm package facts
@@ -140,18 +151,19 @@
           debug:
             msg: "Proxmox found on {{ ansible_hostname }}"
 
-        - name: Copy certificate files to proxmox ve hosts in proper location and naming convention
+        - name: Copy certificate files to AWX Rancher K3S hosts in proper location and naming convention
           copy:
             src: "{{ item.src_file }}"
             dest: "{{ item.dst_file }}"
             owner: root
-            group: www-data
+            group: root
             mode: '0640'
           with_items:
             - src_file: ~/ansible-playbooks/dyn-ssl/certs/fullchain.cer
               dst_file: "/root/awx-on-k3s/base/tls.crt"
             - src_file: ~/ansible-playbooks/dyn-ssl/certs/bustraan.net.key
               dst_file: "/root/awx-on-k3s/base/tls.key"
+              #      become: true
       when: (ansible_hostname == 'awx') 
 
   handlers:
